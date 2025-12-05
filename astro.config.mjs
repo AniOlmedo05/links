@@ -7,6 +7,8 @@ import mcp from 'astro-mcp';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://fullfran.github.io',
+  base: '/links',
   vite: {
     plugins: [tailwindcss()]
   },
