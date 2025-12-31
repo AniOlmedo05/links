@@ -1,0 +1,32 @@
+{
+    "kind": "collectionType",
+    "collectionName": "links",
+    "info": {
+        "singularName": "link",
+        "pluralName": "links",
+        "displayName": "Link",
+        "description": ""
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "attributes": {
+        "name": {
+            "type": "string",
+            "required": true
+        },
+        "url": {
+            "type": "string",
+            "required": true
+        },
+        "icon": {
+            "type": "string"
+        },
+        "classes": {
+            "type": "string"
+        },
+        "order": {
+            "type": "integer"
+        }
+    }
+}
