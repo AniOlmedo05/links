@@ -1,59 +1,50 @@
 ---
-import {
-  ExternalLink,
-  FileText,
-  Globe,
-  Instagram,
-  Linkedin,
-  MessageCircle,
-} from "lucide-astro";
+import * as Icons from "lucide-astro";
+import { ExternalLink } from "lucide-astro";
 import Layout from "../layouts/Layout.astro";
+import { getCollection } from 'astro:content';
 
-const links = [
-  {
-    name: "BlakIA",
-    url: "https://blakia.es",
-    icon: Globe,
-    classes:
-      "bg-black/80 hover:bg-black border-neutral-800 text-white hover:shadow-neutral-900/50",
-  },
-  {
-    name: "WhatsApp",
-    url: "https://wa.me/34669134802",
-    icon: MessageCircle,
-    classes:
-      "bg-[#25D366]/80 hover:bg-[#25D366] border-[#25D366]/50 text-white hover:shadow-[#25D366]/20",
-  },
-  {
-    name: "LinkedIn",
-    url: "https://www.linkedin.com/in/francisco-olmedo-cortes/",
-    icon: Linkedin,
-    classes:
-      "bg-[#0077b5]/80 hover:bg-[#0077b5] border-[#0077b5]/50 text-white hover:shadow-[#0077b5]/20",
-  },
+// Map icon names to Lucide components
+const iconMap = Icons as Record<string, any>;
 
-  {
-    name: "Instagram",
-    url: "https://instagram.com/full.fran",
-    icon: Instagram,
-    classes:
-      "bg-[#E1306C]/80 hover:bg-[#E1306C] border-[#E1306C]/50 text-white hover:shadow-[#E1306C]/20",
-  },
+let links: any[] = [];
+let globalSettings: any = null;
 
-  {
-    name: "Web Personal",
-    url: "https://fullfran.com",
-    icon: FileText,
-    classes:
-      "bg-black/80 hover:bg-black border-neutral-800 text-white hover:shadow-neutral-900/50",
-  },
-];
+try {
+  const [strapiLinks, strapiGlobal] = await Promise.all([
+    getCollection('links'),
+    getCollection('global')
+  ]);
+
+  links = strapiLinks.map((link) => {
+    const { name, url, icon, classes } = link.data;
+    const isUrl = icon?.startsWith('http');
+    
+    return {
+        name,
+        url,
+        icon: isUrl ? icon : (icon && iconMap[icon] ? iconMap[icon] : Icons.HelpCircle),
+        classes: classes || "bg-black/80 hover:bg-black border-neutral-800 text-white hover:shadow-neutral-900/50",
+    };
+  });
+
+  globalSettings = strapiGlobal[0]?.data || {
+    pageTitle: 'Francisco Manuel Olmedo | BlakIA Links',
+    name: 'Francisco Manuel Olmedo',
+    description: 'CEO & AI Architect',
+    footerText: 'Made with ♡ by BlakIA',
+    backgroundClasses: 'bg-neutral-950',
+  };
+} catch (error) {
+  console.error("Error fetching data from Astro Content Layer:", error);
+  links = [];
+}
 ---
 
-<Layout>
+<Layout title={globalSettings.pageTitle} description={globalSettings.description}>
   <!-- Fondo de la página moderno y minimalista "chulo" -->
   <div
-    class="min-h-screen flex items-center justify-center p-6 bg-[#050505] relative overflow-hidden"
+    class={`min-h-screen flex items-center justify-center p-6 relative overflow-hidden ${globalSettings.backgroundClasses}`}
   >
     <!-- Elementos de fondo decorativos sutiles -->
     <div
@@ -90,15 +81,28 @@ const links = [
             <h1
               class="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2 leading-tight"
             >
-              Francisco Manuel
+              {globalSettings.name.split(' ').slice(0, 2).join(' ')}
               <br />
-              Olmedo Cortés
+              {globalSettings.name.split(' ').slice(2).join(' ')}
             </h1>
-            <!--
-            <p class="text-sm text-gray-300 font-medium tracking-wide">
-              CEO & AI Architect
-            </p>
-            -->
+
+            {/* Avatar Section */}
+            {(globalSettings.avatar || globalSettings.avatarUrl) && (
+              <div class="mb-4 relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <img 
+                  src={globalSettings.avatar || globalSettings.avatarUrl} 
+                  alt={globalSettings.name}
+                  class="relative w-24 h-24 rounded-full border-2 border-white/10 object-cover shadow-2xl mx-auto"
+                />
+              </div>
+            )}
+
+            {globalSettings.description && (
+              <p class="text-sm text-gray-300 font-medium tracking-wide">
+                {globalSettings.description}
+              </p>
+            )}
 
             <!-- etiqueta -->
             <!--
@@ -121,7 +125,11 @@ const links = [
                   class={`group flex items-center justify-center px-4 py-3 rounded-xl border transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg relative overflow-hidden ${l.classes}`}
                 >
                   <div class="flex items-center gap-2 relative z-10">
-                    <l.icon class="w-4 h-4 transition-colors" strokeWidth={2} />
+                    {typeof l.icon === 'string' ? (
+                      <img src={l.icon} alt="" class="w-4 h-4 object-contain" />
+                    ) : (
+                      <l.icon class="w-4 h-4 transition-colors" strokeWidth={2} />
+                    )}
                     <span class="text-sm font-medium tracking-wide">
                       {l.name}
                     </span>
@@ -140,9 +148,7 @@ const links = [
           <!-- Footer moderno -->
           <footer class="text-xs text-gray-400 text-center">
             <div class="flex items-center justify-center gap-1">
-              <span>Made with</span>
-              <span class="text-red-400 animate-pulse">♡</span>
-              <span>by BlakIA</span>
+              <span>{globalSettings.footerText}</span>
             </div>
           </footer>
         </div>
