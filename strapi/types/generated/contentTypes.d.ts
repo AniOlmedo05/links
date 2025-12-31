@@ -446,9 +446,15 @@ export interface ApiGlobalGlobal extends Struct.SingleTypeSchema {
     avatarUrl: Schema.Attribute.String;
     backgroundClasses: Schema.Attribute.String &
       Schema.Attribute.DefaultTo<'bg-neutral-950'>;
+    cardBackgroundImage: Schema.Attribute.Media<'images'>;
+    cardStyle: Schema.Attribute.Enumeration<
+      ['carbon', 'glass', 'glossy', 'neon', 'minimal', 'custom']
+    > &
+      Schema.Attribute.DefaultTo<'carbon'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    customCardClasses: Schema.Attribute.String;
     description: Schema.Attribute.Text;
     footerText: Schema.Attribute.String &
       Schema.Attribute.DefaultTo<'Made with \u2661 by BlakIA'>;

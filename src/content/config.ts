@@ -67,6 +67,9 @@ const global = defineCollection({
             avatarUrl: data.avatarUrl,
             avatar: avatarMediaUrl,
             backgroundClasses: data.backgroundClasses,
+            cardStyle: data.cardStyle,
+            customCardClasses: data.customCardClasses,
+            cardBackgroundImage: data.cardBackgroundImage?.url ? baseUrl + data.cardBackgroundImage.url : null,
             footerText: data.footerText,
         }];
     },
@@ -78,6 +81,9 @@ const global = defineCollection({
         avatarUrl: z.string().nullable().optional(),
         avatar: z.string().nullable().optional(),
         backgroundClasses: z.string().nullable().optional(),
+        cardStyle: z.enum(['carbon', 'glass', 'glossy', 'neon', 'minimal', 'custom']).nullable().optional(),
+        customCardClasses: z.string().nullable().optional(),
+        cardBackgroundImage: z.string().nullable().optional(),
         footerText: z.string().nullable().optional(),
     }),
 });

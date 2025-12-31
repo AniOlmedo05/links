@@ -7,8 +7,27 @@ import { getCollection } from 'astro:content';
 // Map icon names to Lucide components
 const iconMap = Icons as Record<string, any>;
 
+// Default Settings
+const DEFAULT_SETTINGS = {
+  pageTitle: 'Francisco Manuel Olmedo | BlakIA Links',
+  name: 'Francisco Manuel Olmedo',
+  description: 'CEO & AI Architect',
+  footerText: 'Made with ♡ by BlakIA',
+  backgroundClasses: 'bg-neutral-950',
+  cardStyle: 'carbon',
+};
+
+// Preset Styles Map
+const presetStyles: Record<string, string> = {
+  carbon: "card-alive carbon-fiber border-white/5",
+  glass: "bg-white/10 backdrop-blur-xl border-white/20 shadow-xl",
+  glossy: "bg-zinc-950 border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]",
+  neon: "bg-black border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.15)]",
+  minimal: "bg-neutral-900 border-neutral-800 shadow-lg",
+};
+
 let links: any[] = [];
-let globalSettings: any = null;
+let globalSettings: any = DEFAULT_SETTINGS;
 
 try {
   const [strapiLinks, strapiGlobal] = await Promise.all([
@@ -28,17 +47,16 @@ try {
     };
   });
 
-  globalSettings = strapiGlobal[0]?.data || {
-    pageTitle: 'Francisco Manuel Olmedo | BlakIA Links',
-    name: 'Francisco Manuel Olmedo',
-    description: 'CEO & AI Architect',
-    footerText: 'Made with ♡ by BlakIA',
-    backgroundClasses: 'bg-neutral-950',
-  };
+  if (strapiGlobal[0]) {
+    globalSettings = { ...DEFAULT_SETTINGS, ...strapiGlobal[0].data };
+  }
 } catch (error) {
   console.error("Error fetching data from Astro Content Layer:", error);
-  links = [];
 }
+
+const currentCardClasses = globalSettings.cardStyle === 'custom' 
+  ? globalSettings.customCardClasses 
+  : (presetStyles[globalSettings.cardStyle] || presetStyles.carbon);
 ---
 
 <Layout title={globalSettings.pageTitle} description={globalSettings.description}>
@@ -56,16 +74,16 @@ try {
     >
     </div>
 
-    <!-- Tarjeta vertical con fondo de fibra de carbono realista y OSCURO -->
+    <!-- Tarjeta vertical con fondo dinámico -->
     <div
-      class="card-alive carbon-fiber w-full max-w-[320px] rounded-[2rem] shadow-2xl border border-white/5 overflow-hidden z-10"
+      class={`w-full max-w-[320px] rounded-[2rem] overflow-hidden z-10 border ${currentCardClasses} ${globalSettings.cardBackgroundImage ? 'bg-cover bg-center' : ''}`}
+      style={globalSettings.cardBackgroundImage ? { backgroundImage: `url(${globalSettings.cardBackgroundImage})` } : {}}
     >
-      <!-- Overlay reducido ya que la fibra es más oscura por sí misma -->
+      <!-- Overlay para asegurar legibilidad -->
       <div
-        class="bg-gradient-to-b from-black/20 via-black/10 to-black/30 backdrop-blur-[1px]"
+        class={`flex flex-col items-center p-8 text-white ${globalSettings.cardBackgroundImage ? 'bg-black/40 backdrop-blur-[2px]' : 'bg-gradient-to-b from-black/20 via-black/10 to-black/30 backdrop-blur-[1px]'}`}
       >
-        <div class="flex flex-col items-center p-8 text-white">
-          <!-- Header con logo de icono moderno -->
+        <!-- Header con logo de icono moderno -->
           <header class="text-center mb-8">
             <!-- Logo icono con efecto de resplandor -->
 
@@ -152,7 +170,6 @@ try {
             </div>
           </footer>
         </div>
-      </div>
     </div>
   </div>
 </Layout>
@@ -272,5 +289,21 @@ try {
   .card-alive > * {
     position: relative;
     z-index: 2;
+  }
+
+  /* Estilos adicionales para Presets específicos */
+  
+  /* Glass preset sutil highlight */
+  .bg-white\/10 {
+    background-image: radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent);
+  }
+
+  /* Neon border extra effect */
+  .border-blue-500\/30 {
+    transition: all 0.3s ease;
+  }
+  .border-blue-500\/30:hover {
+     box-shadow: 0 0 40px rgba(59,130,246,0.3);
+     border-color: rgba(59,130,246,0.6);
   }
 </style>

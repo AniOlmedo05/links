@@ -39,6 +39,28 @@
             "type": "string",
             "default": "bg-neutral-950"
         },
+        "cardStyle": {
+            "type": "enumeration",
+            "enum": [
+                "carbon",
+                "glass",
+                "glossy",
+                "neon",
+                "minimal",
+                "custom"
+            ],
+            "default": "carbon"
+        },
+        "customCardClasses": {
+            "type": "string"
+        },
+        "cardBackgroundImage": {
+            "type": "media",
+            "multiple": false,
+            "allowedTypes": [
+                "images"
+            ]
+        },
         "footerText": {
             "type": "string",
             "default": "Made with ♡ by BlakIA"
