@@ -5,27 +5,31 @@ const links = defineCollection({
         const baseUrl = import.meta.env.STRAPI_URL || 'http://localhost:1337';
         const token = import.meta.env.STRAPI_TOKEN;
 
-        const res = await fetch(`${baseUrl}/api/links?sort=order:asc`, {
-            headers: token ? {
-                Authorization: `Bearer ${token}`,
-            } : {},
-        });
+        try {
+            const res = await fetch(`${baseUrl}/api/links?sort=order:asc`, {
+                headers: token ? {
+                    Authorization: `Bearer ${token}`,
+                } : {},
+            });
 
-        if (!res.ok) {
-            console.error('Failed to fetch links from Strapi');
+            if (!res.ok) {
+                console.warn('Strapi is not reachable or returned an error. Using empty links list.');
+                return [];
+            }
+
+            const { data } = await res.json();
+            return (data || []).map((item: any) => ({
+                id: item.documentId,
+                name: item.name,
+                url: item.url,
+                icon: item.icon,
+                classes: item.classes,
+                order: item.order,
+            }));
+        } catch (error) {
+            console.error('Connection to Strapi failed during build. Check STRAPI_URL.');
             return [];
         }
-
-        const { data } = await res.json();
-
-        return data.map((item: any) => ({
-            id: item.documentId,
-            name: item.name,
-            url: item.url,
-            icon: item.icon,
-            classes: item.classes,
-            order: item.order,
-        }));
     },
     schema: z.object({
         id: z.string(),
@@ -42,36 +46,40 @@ const global = defineCollection({
         const baseUrl = import.meta.env.STRAPI_URL || 'http://localhost:1337';
         const token = import.meta.env.STRAPI_TOKEN;
 
-        const res = await fetch(`${baseUrl}/api/global?populate=*`, {
-            headers: token ? {
-                Authorization: `Bearer ${token}`,
-            } : {},
-        });
+        try {
+            const res = await fetch(`${baseUrl}/api/global?populate=*`, {
+                headers: token ? {
+                    Authorization: `Bearer ${token}`,
+                } : {},
+            });
 
-        if (!res.ok) {
-            console.error('Failed to fetch global settings from Strapi');
+            if (!res.ok) {
+                console.warn('Failed to fetch global settings from Strapi. Using defaults.');
+                return [];
+            }
+
+            const { data } = await res.json();
+            if (!data) return [];
+
+            const avatarMediaUrl = data.avatar ? `${baseUrl}${data.avatar.url}` : null;
+
+            return [{
+                id: data.documentId,
+                pageTitle: data.pageTitle,
+                name: data.name,
+                description: data.description,
+                avatarUrl: data.avatarUrl,
+                avatar: avatarMediaUrl,
+                backgroundClasses: data.backgroundClasses,
+                cardStyle: data.cardStyle,
+                customCardClasses: data.customCardClasses,
+                cardBackgroundImage: data.cardBackgroundImage?.url ? baseUrl + data.cardBackgroundImage.url : null,
+                footerText: data.footerText,
+            }];
+        } catch (error) {
+            console.error('Connection to Strapi failed for Global settings.');
             return [];
         }
-
-        const { data } = await res.json();
-        if (!data) return [];
-
-        // In Strapi 5, media fields are objects. We resolve the URL.
-        const avatarMediaUrl = data.avatar ? `${baseUrl}${data.avatar.url}` : null;
-
-        return [{
-            id: data.documentId,
-            pageTitle: data.pageTitle,
-            name: data.name,
-            description: data.description,
-            avatarUrl: data.avatarUrl,
-            avatar: avatarMediaUrl,
-            backgroundClasses: data.backgroundClasses,
-            cardStyle: data.cardStyle,
-            customCardClasses: data.customCardClasses,
-            cardBackgroundImage: data.cardBackgroundImage?.url ? baseUrl + data.cardBackgroundImage.url : null,
-            footerText: data.footerText,
-        }];
     },
     schema: z.object({
         id: z.string(),
